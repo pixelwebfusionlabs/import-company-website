@@ -6,6 +6,10 @@ import { portfolio } from "@/lib/content/portfolio";
 import { caseStudies } from "@/lib/content/case-studies";
 import { blogPosts } from "@/lib/content/site";
 
+export const dynamic = "force-static";
+
+const buildDate = new Date();
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     "",
@@ -27,7 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/terms",
   ].map((path) => ({
     url: absoluteUrl(path),
-    lastModified: new Date(),
+    lastModified: buildDate,
     changeFrequency: "weekly" as const,
     priority: path === "" ? 1 : 0.7,
   }));
@@ -40,7 +44,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...blogPosts.map((b) => `/blog/${b.slug}`),
   ].map((path) => ({
     url: absoluteUrl(path),
-    lastModified: new Date(),
+    lastModified: buildDate,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));

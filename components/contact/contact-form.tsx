@@ -57,13 +57,28 @@ export function ContactForm() {
 
   async function onSubmit(values: ContactFormValues) {
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to send message");
+      const { submitWeb3Form } = await import("@/lib/web3forms");
+      await submitWeb3Form(
+        {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          name: `${values.firstName} ${values.lastName}`,
+          company: values.company,
+          email: values.email,
+          phone: values.phone,
+          country: values.country,
+          service: values.service,
+          budget: values.budget,
+          timeline: values.timeline,
+          subject: values.subject,
+          message: values.message,
+          newsletter: values.newsletter ? "Yes" : "No",
+          consent: values.consent,
+          website: values.website,
+          attachment_note: fileName || "None",
+        },
+        `[SN Factory] Inquiry: ${values.subject}`,
+      );
       toast.success("Message sent. We will reply within one business day.");
       reset();
       setFileName(null);

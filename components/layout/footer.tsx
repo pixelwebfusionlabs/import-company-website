@@ -24,13 +24,15 @@ export function Footer() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, website: honeypot }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      const { submitWeb3Form } = await import("@/lib/web3forms");
+      await submitWeb3Form(
+        {
+          email,
+          website: honeypot,
+          message: `Newsletter signup: ${email}`,
+        },
+        `[SN Factory] Newsletter signup: ${email}`,
+      );
       toast.success("You are subscribed. Welcome aboard.");
       setEmail("");
     } catch (err) {

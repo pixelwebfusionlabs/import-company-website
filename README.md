@@ -54,16 +54,16 @@ In development, if neither Resend nor SMTP is configured, emails are logged to t
 
 ```bash
 npm run dev       # development server
-npm run build     # production build
-npm run start     # start production server
+npm run build     # static export → out/
 npm run lint      # ESLint
 npm run format    # Prettier
+npm run deploy:s3 # build + upload out/ to S3
 ```
 
 ## Folder structure
 
 ```
-app/                 # Routes, layouts, API
+app/                 # Routes, layouts
 components/
   ui/                # shadcn primitives
   layout/            # Header, Footer, ThemeToggle
@@ -72,33 +72,51 @@ components/
   shared/            # Section, Reveal, Counter, CTA…
 lib/
   content/           # Company copy & data
-  email/             # Resend + Nodemailer
+  email/             # Legacy Resend/Nodemailer helpers
   seo/               # Metadata & JSON-LD
   validations/       # Zod schemas
+  web3forms.ts       # Static-host form submissions
 hooks/
 types/
 public/brand/        # Logo & brand assets
+out/                 # Static export output (after npm run build)
 ```
 
 Update company details in `lib/content/company.ts` and related content modules.
 
 ## Deployment
 
-### Vercel
+### Amazon S3 (static hosting)
 
-1. Push the repo to GitHub.
-2. Import the project in Vercel.
-3. Add environment variables from `.env.example`.
-4. Deploy.
+The site uses `output: "export"` and builds to the `out/` folder.
 
-### Docker
+1. Create an S3 bucket and enable **Static website hosting**:
+   - Index document: `index.html`
+   - Error document: `404.html`
+2. Allow public read on objects (or serve via CloudFront + OAC).
+3. Configure AWS CLI (`aws configure`).
+4. Set the bucket name and deploy:
 
 ```bash
-docker build -t snfactory .
-docker run -p 3000:3000 --env-file .env.local snfactory
+export S3_BUCKET=your-bucket-name
+# Optional: bake forms key into the build
+# export NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=your_key
+npm run deploy:s3
 ```
 
-The Next.js config uses `output: "standalone"` for the Docker image.
+Website URL (no CloudFront):
+
+`http://your-bucket-name.s3-website-REGION.amazonaws.com`
+
+For HTTPS and a custom domain, put CloudFront in front of the bucket (default root object `index.html`, custom error `404.html`).
+
+### Forms on static hosting
+
+Contact and newsletter use [Web3Forms](https://web3forms.com). Set `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` in `.env.local` **before** building so the key is included in the static JS.
+
+### Vercel
+
+You can still deploy to Vercel, but prefer a Node hosting target if you need server APIs again. For the current static export, S3 (or any static host) is the intended path.
 
 ## Brand
 
